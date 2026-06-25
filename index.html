@@ -545,51 +545,53 @@
         });
     </script>
     <script>
-        document.getElementById('trial-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const form = e.target;
-            
-            // Honeypot spam check (Aborts submission quietly if filled out by a bot)
-            if (form.elements['b_phone'].value !== '') {
-                return; 
-            }
+document.getElementById('trial-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    
+    // Honeypot spam check (Aborts submission quietly if filled out by a bot)
+    if (form.elements['b_phone'].value !== '') {
+        return; 
+    }
 
-            const name = form.elements['name'].value;
-            const phone = form.elements['phone'].value;
-            const email = form.elements['email'].value;
-            
-            const webhookUrl = 'https://discord.com/api/webhooks/1519842085761454130/eagWZXmBsO6MGOuVc51s3cEc2_y5NtViK6BHj4DqektuNlDG3m8LXh451tYABpX8x5ku';
-            
-            const payload = {
-                embeds: [{
-                    title: "ScoutAI Automation Sign-Up!",
-                    color: 6502891, // Custom Indigo Accent Color
-                    fields: [
-                        { name: "👤 Name", value: name, inline: true },
-                        { name: "📞 Phone", value: phone, inline: true },
-                        { name: "📧 Email", value: email, inline: true }
-                    ],
-                    timestamp: new Date().toISOString()
-                }]
-            };
+    const name = form.elements['name'].value;
+    const phone = form.elements['phone'].value;
+    const email = form.elements['email'].value;
+    
+    // Base64 encoded new Discord webhook URL
+    const encodedWebhook = 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTUxOTg0Njk2NjAyNzA5NjA4Ni8wc1I0clNmd3lGVEcxb1Rjb1B0ODBqajhicjRzTm1xNF9XTkx0RDNFMF9OYUJ4eWx4SmVjVDA0ekxJRzVETTVQZzU2SA==';
+    const webhookUrl = atob(encodedWebhook);
+    
+    const payload = {
+        embeds: [{
+            title: "🚀 New Co-Botz Trial Sign-Up!",
+            color: 6502891, // Custom Indigo Accent Color
+            fields: [
+                { name: "👤 Name", value: name, inline: true },
+                { name: "📞 Phone", value: phone, inline: true },
+                { name: "📧 Email", value: email, inline: true }
+            ],
+            timestamp: new Date().toISOString()
+        }]
+    };
 
-            try {
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (response.ok) {
-                    form.classList.add('hidden');
-                    document.getElementById('form-success').classList.remove('hidden');
-                } else {
-                    alert('Something went wrong. Please check your network and try again.');
-                }
-            } catch (error) {
-                alert('Something went wrong. Please check your network and try again.');
-            }
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
-    </script>
+        
+        if (response.ok) {
+            form.classList.add('hidden');
+            document.getElementById('form-success').classList.remove('hidden');
+        } else {
+            alert('Something went wrong. Please check your network and try again.');
+        }
+    } catch (error) {
+        alert('Something went wrong. Please check your network and try again.');
+    }
+});
+</script>
 </body>
 </html>
