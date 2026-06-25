@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoutAI Partner - Real Estate Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        indigo: {
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .dark .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .gradient-text { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .card-glow:hover {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .dark .card-glow:hover {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+        
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 500px;
+            opacity: 1;
+        }
+        .accordion-item.active svg.chevron {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 relative selection:bg-indigo-500/30">
+
+    <!-- Ambient Background Glows -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/20 dark:bg-indigo-600/20 blur-[120px] mix-blend-multiply dark:mix-blend-screen"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/20 dark:bg-purple-600/20 blur-[120px] mix-blend-multiply dark:mix-blend-screen"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 top-0 pt-4 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto glass rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/50">
+            <div class="flex justify-between items-center h-14 px-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold shadow-inner">S</div>
+                    <span class="font-bold text-lg tracking-tight">ScoutAI</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#demo" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Demo</a>
+                    <a href="#features" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Features</a>
+                    <a href="#app" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Mobile App</a>
+                    <a href="#pricing" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Pricing</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors text-slate-600 dark:text-slate-300">
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                    <a href="#" class="hidden sm:inline-flex items-center justify-center px-4 py-1.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all hover:-translate-y-0.5">
+                        Start Free Trial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-36 pb-20 sm:pt-48 sm:pb-24 overflow-hidden z-10">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center rounded-full px-3 py-1 text-xs sm:text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-900/20 ring-1 ring-inset ring-indigo-600/20 dark:ring-indigo-500/30 mb-8 backdrop-blur-sm">
+                <span class="flex w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                Georgia's #1 AI Assistant for Real Estate
+            </div>
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-slate-900 dark:text-white leading-[1.1] sm:leading-[1.1]">
+                Never Miss an <br class="hidden sm:block">
+                <span class="bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 gradient-text bg-[length:200%_auto] animate-pulse-slow block sm:inline mt-2 sm:mt-0">
+                    $11,000 Commission
+                </span> Again
+            </h1>
+            <p class="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                For active real estate agents in Georgia. When you miss a call from a Zillow lead, they call the next agent. Our AI instantly texts back, pulls live property details, and books the walkthrough.
+            </p>
+            <div class="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2 sm:px-0">
+                <a href="#pricing" class="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-4 sm:py-3.5 text-base font-semibold rounded-xl text-white bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-xl shadow-slate-900/10 dark:shadow-white/10 transition-all hover:-translate-y-0.5 ring-1 ring-slate-900/5 dark:ring-white/10">
+                    Start 14-Day Free Trial
+                </a>
+                <a href="#demo" class="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-4 sm:py-3.5 text-base font-medium rounded-xl text-slate-700 dark:text-slate-200 bg-white/50 dark:bg-slate-800/50 backdrop-blur border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 shadow-sm transition-all hover:-translate-y-0.5">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    Watch 50s Demo
+                </a>
+            </div>
+            <p class="mt-6 text-sm text-slate-500 dark:text-slate-500">No credit card required. Setup takes 2 minutes.</p>
+        </div>
+    </section>
+
+    <!-- Video Section (Cinema Frame) -->
+    <section id="demo" class="relative py-12 z-10">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative rounded-3xl p-1.5 sm:p-2 bg-gradient-to-b from-slate-200 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 shadow-2xl dark:shadow-[0_0_50px_-12px_rgba(99,102,241,0.3)] backdrop-blur-xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 rounded-3xl blur-2xl opacity-20 dark:opacity-40 animate-pulse-slow"></div>
+                <div class="relative rounded-2xl overflow-hidden bg-slate-950 aspect-video border border-slate-300/50 dark:border-slate-700/50 ring-1 ring-white/10 dark:ring-0">
+                    <!-- Added styling for standard HTML5 video to look premium -->
+                    <video class="w-full h-full object-cover" controls poster="assets/video_thumbnail.png" style="--media-control-background: rgba(15, 23, 42, 0.8);">
+                        <source src="assets/final_promo.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section (Linear Style) -->
+    <section id="features" class="relative py-24 z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 max-w-2xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">Built to close deals on autopilot.</h2>
+                <p class="text-lg text-slate-600 dark:text-slate-400">Everything you need to convert missed calls into scheduled walkthroughs without lifting a finger.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="card-glow group p-6 sm:p-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-slate-800 transition-all duration-300">
+                    <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-slate-900 dark:text-white tracking-tight">Instant Text-Back</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">Responds to missed calls in under 15 seconds. Keep your leads engaged instantly before they move on to the next agent on Zillow.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="card-glow group p-6 sm:p-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-slate-800 transition-all duration-300">
+                    <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-slate-900 dark:text-white tracking-tight">Live Zillow Sync</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">Automatically identifies the property they called about and feeds them real-time data, making you look like an absolute expert immediately.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="card-glow group p-6 sm:p-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-slate-800 transition-all duration-300">
+                    <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-slate-900 dark:text-white tracking-tight">Calendar Booking</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">Syncs directly with Google/Apple calendar to schedule walkthroughs automatically without endless back-and-forth messaging.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Free Companion App Section (Floating Stack) -->
+    <section id="app" class="relative py-24 overflow-hidden z-10 border-y border-slate-200/50 dark:border-slate-800/50 bg-slate-100/50 dark:bg-slate-900/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="max-w-xl">
+                    <div class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-inset ring-indigo-600/20 dark:ring-indigo-500/30 mb-6">
+                        Included Free
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight">The ultimate pocket tool for real estate teams.</h2>
+                    <p class="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                        All Pro Partner clients get full premium access to the ScoutAI companion app. Analyze flips, estimate rehab costs instantly using visual AI, and run unlimited skip traces while out in the field.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="https://apps.apple.com/us/app/scoutai-real-estate-investing/id6777263556" target="_blank" class="hover:opacity-80 transition transform hover:-translate-y-1">
+                            <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1384992000" alt="Download on the App Store" class="h-12 w-auto dark:invert">
+                        </a>
+                        <a href="https://play.google.com/store/apps/details?id=com.faces.scoutai" target="_blank" class="hover:opacity-80 transition transform hover:-translate-y-1">
+                            <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" class="h-16 w-auto -mt-2">
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Floating Overlapping Phones -->
+                <div class="relative h-[500px] sm:h-[600px] w-full hidden sm:block">
+                    <!-- Phone 1 (Back left) -->
+                    <div class="absolute top-[10%] left-[10%] w-[180px] rounded-[2rem] bg-slate-900 p-1 shadow-2xl transform rotate-[-12deg] animate-float opacity-60 blur-[2px]">
+                        <div class="rounded-[1.75rem] overflow-hidden bg-black border border-slate-800">
+                            <img src="assets/7hts9ETMLSN4_1284_2778.png" alt="App Screen" class="w-full h-auto object-cover">
+                        </div>
+                    </div>
+                    <!-- Phone 2 (Back right) -->
+                    <div class="absolute top-[5%] right-[10%] w-[180px] rounded-[2rem] bg-slate-900 p-1 shadow-2xl transform rotate-[12deg] animate-float-delayed opacity-60 blur-[2px]">
+                        <div class="rounded-[1.75rem] overflow-hidden bg-black border border-slate-800">
+                            <img src="assets/cBIrQ4yiQ5r6_1284_2778.png" alt="App Screen" class="w-full h-auto object-cover">
+                        </div>
+                    </div>
+                    <!-- Phone 3 (Center Main) -->
+                    <div class="absolute top-[20%] left-1/2 -translate-x-1/2 w-[220px] rounded-[2rem] bg-slate-800 dark:bg-slate-700 p-1.5 shadow-[0_20px_50px_rgba(8,_112,_184,_0.3)] z-10 animate-float border border-slate-700 dark:border-slate-600">
+                        <div class="rounded-[1.6rem] overflow-hidden bg-black">
+                            <img src="assets/KpFykrGLbyXQ_1284_2778.png" alt="App Screen" class="w-full h-auto object-cover">
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile fallback view -->
+                <div class="sm:hidden grid grid-cols-2 gap-3 mt-10 px-2">
+                     <div class="rounded-[1.25rem] overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 transform rotate-[-2deg]"><img src="assets/KpFykrGLbyXQ_1284_2778.png" alt="App Screen" class="w-full"></div>
+                     <div class="rounded-[1.25rem] overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 transform rotate-[2deg] translate-y-4"><img src="assets/cBIrQ4yiQ5r6_1284_2778.png" alt="App Screen" class="w-full"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof Section -->
+    <section class="relative py-24 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Loved by Top Georgia Agents</h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Testimonial 1 -->
+                <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex gap-1 text-amber-400 mb-4">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">"I used to lose 3 to 4 leads a week because I was out showing properties. Within the first 10 days of using ScoutAI, it booked a buyer walkthrough while I was in a closing. That lead turned into a $12k commission."</p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md">SM</div>
+                        <div>
+                            <p class="font-semibold text-slate-900 dark:text-white text-sm">Sarah M.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Principal Broker, Savannah</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonial 2 -->
+                <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex gap-1 text-amber-400 mb-4">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">"Most leads hang up and call the next agent on Zillow if you don't answer. This AI text-back engages them immediately with the exact listing info they wanted. It makes me look like I have a 24/7 team."</p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 dark:from-slate-600 dark:to-slate-800 flex items-center justify-center text-white font-bold text-sm shadow-md">MT</div>
+                        <div>
+                            <p class="font-semibold text-slate-900 dark:text-white text-sm">Marcus T.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Realtor, Atlanta</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonial 3 -->
+                <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex gap-1 text-amber-400 mb-4">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">"The combination of the missed-call assistant and the ScoutAI app is a cheat code. My team runs rehab numbers on the app, while the assistant keeps our incoming pipeline fully booked."</p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm shadow-md">ER</div>
+                        <div>
+                            <p class="font-semibold text-slate-900 dark:text-white text-sm">Elena R.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Team Lead, Augusta</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="relative py-24 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+            <div class="w-full max-w-lg relative px-2 sm:px-0">
+                <!-- Animated glowing border -->
+                <div class="absolute -inset-[1px] bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 rounded-[2rem] blur-sm opacity-50 dark:opacity-70 mx-2 sm:mx-0"></div>
+                
+                <div class="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-10 shadow-2xl border border-white/20 dark:border-slate-800">
+                    <div class="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+                    
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Pro Partner Plan</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Everything you need to scale</p>
+                        </div>
+                        <div class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30">
+                            Most Popular
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8 pb-8 border-b border-slate-200 dark:border-slate-800">
+                        <div class="flex items-baseline gap-x-2">
+                            <span class="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">$150</span>
+                            <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">/month</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-10 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        <li class="flex gap-x-3 items-center">
+                            <div class="flex-none w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                                <svg class="h-3 w-3 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                            </div>
+                            Unlimited AI Text-backs
+                        </li>
+                        <li class="flex gap-x-3 items-center">
+                            <div class="flex-none w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                                <svg class="h-3 w-3 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                            </div>
+                            Live Zillow Syncing
+                        </li>
+                        <li class="flex gap-x-3 items-center">
+                            <div class="flex-none w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                                <svg class="h-3 w-3 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                            </div>
+                            Cal.com / Calendly Integration
+                        </li>
+                        <li class="flex gap-x-3 items-center">
+                            <div class="flex-none w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                                <svg class="h-3 w-3 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                            </div>
+                            Free Premium Access to ScoutAI Mobile App
+                        </li>
+                        <li class="flex gap-x-3 items-center">
+                            <div class="flex-none w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                <svg class="h-3 w-3 text-slate-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                            </div>
+                            24/7 Server Maintenance
+                        </li>
+                        <li class="flex gap-x-3 items-center">
+                            <div class="flex-none w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                <svg class="h-3 w-3 text-slate-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                            </div>
+                            No contract / Cancel anytime
+                        </li>
+                    </ul>
+                    
+                    <a href="#" class="block w-full py-4 px-8 text-center text-white font-semibold rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-lg shadow-slate-900/20 dark:shadow-white/10 transition-all hover:-translate-y-0.5">
+                        Start 14-Day Free Trial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="relative py-24 border-t border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-950/50 z-10">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Frequently Asked Questions</h2>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- FAQ 1 -->
+                <div class="accordion-item bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-all">
+                    <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none" onclick="this.parentElement.classList.toggle('active')">
+                        <span class="font-medium text-slate-900 dark:text-white">How fast does the AI respond to a missed call?</span>
+                        <svg class="w-5 h-5 text-slate-500 chevron transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6 bg-slate-50 dark:bg-slate-800/50">
+                        <p class="pb-5 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                            Within 15 seconds. If you don't answer the phone, the AI immediately fires off a personalized text message referencing their number and pulls Zillow data if available.
+                        </p>
+                    </div>
+                </div>
+                <!-- FAQ 2 -->
+                <div class="accordion-item bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-all">
+                    <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none" onclick="this.parentElement.classList.toggle('active')">
+                        <span class="font-medium text-slate-900 dark:text-white">Does it integrate with my existing CRM?</span>
+                        <svg class="w-5 h-5 text-slate-500 chevron transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6 bg-slate-50 dark:bg-slate-800/50">
+                        <p class="pb-5 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                            Yes! ScoutAI connects natively with FollowUp Boss, Lofty, and most major real estate CRMs via Zapier webhooks to ensure all conversations are logged automatically.
+                        </p>
+                    </div>
+                </div>
+                <!-- FAQ 3 -->
+                <div class="accordion-item bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-all">
+                    <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none" onclick="this.parentElement.classList.toggle('active')">
+                        <span class="font-medium text-slate-900 dark:text-white">Do I need to sign a contract?</span>
+                        <svg class="w-5 h-5 text-slate-500 chevron transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6 bg-slate-50 dark:bg-slate-800/50">
+                        <p class="pb-5 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                            Absolutely not. Our service is month-to-month and you can cancel anytime. We want to earn your business every month by helping you close more deals.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 pt-16 pb-8 z-10 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center md:items-start gap-10 mb-12">
+                <div class="flex flex-col items-center md:items-start">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded flex items-center justify-center text-white font-bold text-sm shadow-sm">S</div>
+                        <span class="font-bold text-xl text-slate-900 dark:text-white tracking-tight">ScoutAI</span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs text-center md:text-left">
+                        Building the future of automated real estate lead conversion and property analysis.
+                    </p>
+                </div>
+                
+                <div class="flex gap-10 sm:gap-12 text-sm w-full md:w-auto justify-center md:justify-end">
+                    <div class="flex flex-col space-y-3 text-center md:text-left">
+                        <span class="font-semibold text-slate-900 dark:text-white">Product</span>
+                        <a href="#features" class="text-slate-500 hover:text-indigo-500 transition-colors">Features</a>
+                        <a href="#pricing" class="text-slate-500 hover:text-indigo-500 transition-colors">Pricing</a>
+                        <a href="#app" class="text-slate-500 hover:text-indigo-500 transition-colors">Mobile App</a>
+                    </div>
+                    <div class="flex flex-col space-y-3 text-center md:text-left">
+                        <span class="font-semibold text-slate-900 dark:text-white">Legal</span>
+                        <a href="#" class="text-slate-500 hover:text-indigo-500 transition-colors">Privacy Policy</a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-500 transition-colors">Terms of Service</a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-500 transition-colors">GA Compliance</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-6">
+                <p class="text-xs text-slate-400 dark:text-slate-500 text-center md:text-left">
+                    &copy; 2024 ScoutAI Partner. All rights reserved. Not affiliated with Zillow Group.
+                </p>
+                <div class="flex space-x-4 text-slate-400">
+                    <a href="#" class="hover:text-indigo-500 transition-colors">
+                        <span class="sr-only">Twitter</span>
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle & Sticky Nav Script -->
+    <script>
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            lightIcon.classList.remove('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            darkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            darkIcon.classList.toggle('hidden');
+            lightIcon.classList.toggle('hidden');
+
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
+
+        // Sticky Nav Blur Effect on Scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav > div');
+            if (window.scrollY > 20) {
+                nav.classList.add('bg-white/80', 'dark:bg-slate-900/80');
+                nav.classList.remove('glass');
+            } else {
+                nav.classList.remove('bg-white/80', 'dark:bg-slate-900/80');
+                nav.classList.add('glass');
+            }
+        });
+    </script>
+</body>
+</html>
